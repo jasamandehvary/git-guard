@@ -1,0 +1,8 @@
+title = "git-guard gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "test fixtures"
+paths = ['''^tests/fixtures/''']
