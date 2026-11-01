@@ -1,0 +1,8 @@
+failure-threshold: warning
+ignored:
+  - DL3008
+trustedRegistries:
+  - docker.io
+  - ghcr.io
+  - quay.io
+  - registry.access.redhat.com
