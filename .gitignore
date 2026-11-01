@@ -1,0 +1,4 @@
+*.git-guard
+.DS_Store
+.idea/
+.vscode/
