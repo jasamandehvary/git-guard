@@ -1,0 +1,77 @@
+# git-guard — shift-left security & quality checks that run on every commit.
+# Docs: https://pre-commit.com
+#
+# Install once per repo:   pre-commit install --install-hooks -t pre-commit -t commit-msg
+# Run on everything:       pre-commit run --all-files
+# Update hook versions:    pre-commit autoupdate
+
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  # ───────────── 1. Secrets ─────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: "🔐 gitleaks — scan for secrets"
+
+  # ───────────── 2. Basic hygiene ─────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: detect-private-key
+        name: "🔑 detect private keys"
+        exclude: '^tests/run-tests\.sh$'   # contains a fake key on purpose
+      - id: check-added-large-files
+        name: "📦 block files > 1 MB"
+        args: ["--maxkb=1024"]
+      - id: check-merge-conflict
+        name: "⚔️  leftover merge-conflict markers"
+      - id: no-commit-to-branch
+        name: "🚫 no direct commits to main/master"
+        args: ["--branch", "main", "--branch", "master"]
+      - id: check-yaml
+        name: "📄 YAML syntax"
+        args: ["--allow-multiple-documents"]
+        exclude: '(^|/)templates/'
+      - id: check-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # ───────────── 3. YAML / Kubernetes style ─────────────
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        name: "🧹 yamllint"
+        args: ["-c", ".yamllint.yaml"]
+        exclude: '(^|/)templates/'
+
+  # ───────────── 4. Dockerfiles ─────────────
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.12.1b3
+    hooks:
+      - id: hadolint
+        name: "🐳 hadolint — Dockerfile best practices"
+        args: ["--config", ".hadolint.yaml"]
+
+  # ───────────── 5. Shell scripts ─────────────
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        name: "🐚 shellcheck"
+
+  # ───────────── 6. Commit messages ─────────────
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        name: "✍️  conventional commit message"
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert, sec]
